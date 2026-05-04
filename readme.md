@@ -1,357 +1,198 @@
 # Terraform MCP Assistant
 
-A powerful macro-based infrastructure automation tool that generates Terraform code using Model Context Protocol (MCP) servers for AWS and HashiCorp resources.
+AI-powered infrastructure automation tool that generates and executes Terraform code using MCP servers and LLMs.
+
+![Terraform Assistant UI](terraform-assistant-ui.png)
 
 ## Overview
 
-Terraform MCP Assistant is an intelligent infrastructure automation platform that combines **DeepSeek AI** with the **AWS Labs Terraform MCP Server** to generate and directly execute Terraform code.
+Terraform MCP Assistant combines large language models with AWS Labs Terraform MCP Server to intelligently generate and directly execute Terraform configurations.
 
-### How It Works
-
-1. **User Request**: Specify infrastructure needs (e.g., "Create VPC with EC2 instance, RDS database, and S3 bucket")
-2. **AI Processing**: DeepSeek Chat API understands requirements and generates Terraform specifications
-3. **MCP Interaction**: AWS Labs Terraform MCP Server provides real-time AWS resource schemas and best practices
-4. **Code Generation**: System generates production-grade Terraform configurations
-5. **File Creation**: Actual `.tf` files and directory structure are created (`terraform/generated/`)
-6. **Terraform Execution**: Automatically runs `terraform plan` and `terraform apply` (if configured)
-7. **Resource Provisioning**: AWS resources are created and managed via Terraform state
-
-### Key Advantages
-
-- **Intelligent Generation**: AI understands complex infrastructure requirements
-- **AWS Best Practices**: MCP server ensures configurations follow AWS guidelines
-- **Automated Execution**: No manual `terraform apply` needed - automatic provisioning
-- **Complex Deployments**: Handles multi-resource, multi-tier infrastructure
-- **Scalable**: Async operations for high-performance concurrent requests
+**How it works:**
+1. Describe infrastructure needs in natural language
+2. AI (DeepSeek/Claude/GPT-4) generates Terraform code
+3. AWS Labs MCP Server validates against AWS best practices
+4. Terraform files are created and automatically executed
+5. AWS resources are provisioned
 
 ## Features
 
-- **DeepSeek AI Integration**: Uses DeepSeek Chat API for intelligent Terraform code generation
-- **AWS Labs MCP Server**: Connects to official AWS Terraform MCP server (awslabs.terraform-mcp-server) for real-time resource discovery
-- **Dynamic Terraform Generation**: Automatically generates production-grade Terraform configurations
-- **Direct Terraform Execution**: Creates actual `.tf` files and directories, then executes `terraform apply`
-- **Complex Infrastructure Support**: Handles multi-resource deployments (EC2, RDS, S3, EKS, VPC, IAM, etc.)
-- **Async MCP Client**: Non-blocking MCP operations for optimal performance
-- **Intelligent Tool Callbacks**: MCP tools are automatically parsed and executed
+- **AI-Powered Code Generation**: Natural language to Terraform conversion
+- **MCP Server Integration**: AWS Labs Terraform MCP Server for real-time resource schemas
+- **Automatic Execution**: Creates .tf files and runs terraform apply directly
+- **Complex Deployments**: Multi-resource, multi-tier infrastructure support
+- **Async Operations**: Non-blocking MCP client for high performance
+- **Multiple LLM Support**: DeepSeek, OpenAI, Claude, or any compatible model
 
 ## Tech Stack
 
-- **Backend**: Java, Spring Boot 3.x, Spring AI
-- **AI Integration**: DeepSeek Chat API (AI-powered code generation)
-- **MCP (Model Context Protocol)**: AWS Labs Terraform MCP Server
-- **Infrastructure**: Terraform (IaC generation and execution)
-- **Cloud Platform**: AWS
-- **Build Tool**: Maven
-- **Async Operations**: Async MCP Client for non-blocking calls
-- **Version Control**: Git
+- Java 11+, Spring Boot 3.x, Spring AI
+- LLMs: DeepSeek (default), OpenAI, Anthropic Claude, etc.
+- MCP: AWS Labs Terraform MCP Server
+- Infrastructure: Terraform, AWS
+- Build: Maven
+- Version Control: Git
 
-## Project Structure
+## Quick Start
 
-```
-terraform-mcp-assistant/
-├── src/
-│   ├── main/
-│   │   ├── java/          # Java source code
-│   │   └── resources/     # Application properties
-│   └── test/              # Unit tests
-├── target/                # Compiled artifacts
-├── pom.xml               # Maven configuration
-├── mvnw                  # Maven wrapper (Unix)
-├── mvnw.cmd             # Maven wrapper (Windows)
-└── README.md            # This file
-```
-
-## Prerequisites
-
-- Java 11 or higher
+### Prerequisites
+- Java 11+
 - Maven 3.6+
-- DeepSeek API Key (free at https://platform.deepseek.com)
 - Terraform 1.0+
-- AWS Account with valid credentials
-- `uvx` installed (for MCP server execution)
-- Git
+- AWS credentials configured
+- API key for your chosen LLM
 
-## Installation & Setup
+### Setup
 
-### 1. Get DeepSeek API Key
-
-- Go to https://platform.deepseek.com
-- Sign up for free account
-- Generate API key
-- Note down your API key
-
-### 2. Clone Repository
-
+1. **Clone Repository**
 ```bash
 git clone https://github.com/sudarshanj01/terraform-mcp-assistant.git
 cd terraform-mcp-assistant
 ```
 
-### 3. Set Environment Variables
+2. **Configure LLM (Choose One)**
 
+**DeepSeek (Default)**
 ```bash
-# DeepSeek API Key
-export DEEPSEEK_API_KEY=your_deepseek_api_key_here
+export DEEPSEEK_API_KEY=your_key
+```
 
-# AWS Credentials
-export AWS_ACCESS_KEY_ID=your_access_key
-export AWS_SECRET_ACCESS_KEY=your_secret_key
+**OpenAI**
+```bash
+export OPENAI_API_KEY=your_key
+```
+
+**Anthropic Claude**
+```bash
+export ANTHROPIC_API_KEY=your_key
+```
+
+3. **Configure AWS Credentials**
+```bash
+export AWS_ACCESS_KEY_ID=your_key
+export AWS_SECRET_ACCESS_KEY=your_secret
 export AWS_REGION=us-east-1
-
-# Optional: Terraform directory
-export TERRAFORM_OUTPUT_PATH=./terraform/generated
 ```
 
-### 4. Build Project
-
+4. **Build & Run**
 ```bash
-# Using Maven wrapper (Unix/Linux/Mac)
 ./mvnw clean install
-
-# Using Maven wrapper (Windows)
-mvnw.cmd clean install
-
-# Or using system Maven
-mvn clean install
-```
-
-### 5. Run Application
-
-```bash
 ./mvnw spring-boot:run
-# Or
-mvn spring-boot:run
 ```
 
-Application starts at `http://localhost:8080`
+Access at: `http://localhost:8080`
 
 ## Usage
 
-### API Endpoint: Generate & Execute Terraform
+### Web UI
+1. Enter infrastructure request: "Create VPC with EC2 instance and RDS database"
+2. Select quick templates or describe custom setup
+3. Click generate - Terraform code is created and executed
+4. View generated .tf files in `terraform/generated/`
 
+### API
 ```bash
-POST /api/terraform/generate-and-apply
-Content-Type: application/json
-
+POST /api/terraform/generate
 {
-  "infrastructure_request": "Create a VPC with 2 public subnets, 1 private subnet, 1 NAT gateway, 1 EC2 t3.micro instance in public subnet, and 1 RDS MySQL database in private subnet",
+  "request": "Create S3 bucket for static website hosting",
   "region": "us-east-1",
-  "environment": "development",
   "auto_apply": true
 }
 ```
 
-### What Happens Automatically
-
-1. **AI Parses Request**: DeepSeek understands the infrastructure needs
-2. **MCP Server Queries**: AWS Terraform MCP server provides resource schemas
-3. **Terraform Files Created**: 
-   ```
-   terraform/generated/
-   ├── main.tf
-   ├── variables.tf
-   ├── outputs.tf
-   ├── vpc.tf
-   ├── compute.tf
-   ├── database.tf
-   └── terraform.tfvars
-   ```
-4. **Validation**: `terraform validate` is run automatically
-5. **Execution**: `terraform plan` and `terraform apply` execute (if auto_apply=true)
-6. **Resources Provisioned**: AWS resources are created and managed
-7. **Response**: Returns Terraform output, resource IDs, and deployment status
-
-### Example Response
-
-```json
-{
-  "status": "success",
-  "terraform_files_created": 6,
-  "resources_provisioned": 8,
-  "vpc_id": "vpc-0abc123def456",
-  "ec2_instance_id": "i-0xyz789abc123",
-  "rds_endpoint": "mydb.c9akciq32.us-east-1.rds.amazonaws.com",
-  "terraform_state": "terraform.tfstate",
-  "execution_time_ms": 45000
-}
-```
-
-## MCP Server Integration
-
-This project integrates with:
-- **AWS Labs Terraform MCP Server** (`awslabs.terraform-mcp-server@latest`): Official Terraform resource schemas, AWS best practices, and infrastructure patterns
-
-### How MCP Integration Works
-
-1. **Connection**: Spring AI MCP Client connects to AWS Labs Terraform MCP Server via STDIO
-2. **Tool Discovery**: Server exposes Terraform tools for resource creation and validation
-3. **Async Execution**: Non-blocking async operations prevent timeouts on large deployments
-4. **Tool Callbacks**: MCP tools are automatically parsed and executed
-5. **Error Handling**: STDERR is redirected to logs (FASTMCP_LOG_LEVEL=ERROR) to avoid STDIO pollution
-
-### Supported AWS Resources (via MCP)
-
-- EC2 (instances, security groups, key pairs)
-- VPC (subnets, internet gateways, route tables, NAT gateways)
-- RDS (databases, parameter groups, security groups)
-- S3 (buckets, policies, versioning)
-- EKS (clusters, node groups)
-- IAM (roles, policies, users)
-- Lambda (functions, layers, permissions)
-- CloudWatch (log groups, alarms)
-- And many more...
-
-## Key Components
-
-### DeepSeek AI Service
-- Processes natural language infrastructure requests
-- Generates Terraform variable specifications
-- Understands complex multi-resource deployments
-- Uses 4000 token context window for detailed configurations
-
-### MCP Client Service
-- Manages async STDIO connections to AWS Labs Terraform MCP Server
-- Executes Terraform tools discovered from MCP server
-- Handles tool callbacks and result parsing
-- Implements 120-second timeout for long-running operations
-
-### Terraform Code Generator
-- Creates directory structure (`terraform/generated/`)
-- Generates `.tf` files (main.tf, variables.tf, outputs.tf, resource files)
-- Implements Terraform best practices
-- Handles variable interpolation and resource dependencies
-
-### Terraform Executor
-- Runs `terraform validate`
-- Executes `terraform plan` with state locking
-- Applies changes via `terraform apply`
-- Manages Terraform state files
-- Captures execution logs and resource IDs
-
-### AWS Integration Layer
-- AWS credentials management (IAM roles, access keys)
-- Region configuration and multi-AZ support
-- Security group and VPC networking
-- Cross-resource dependency management
-
-## Testing
-
-```bash
-# Run unit tests
-./mvnw test
-
-# Run integration tests
-./mvnw verify
-
-# Run with coverage
-./mvnw clean test jacoco:report
-```
-
-## Deployment
-
-### Local Development
-```bash
-./mvnw spring-boot:run
-```
-
-### Docker Deployment
-```bash
-# Build Docker image
-docker build -t terraform-mcp-assistant .
-
-# Run container
-docker run -p 8080:8080 terraform-mcp-assistant
-```
-
-### AWS Deployment
-- Deploy to AWS Elastic Beanstalk or ECS
-- Configure environment variables for AWS credentials
-- Use RDS for persistent storage (if needed)
-
 ## Configuration
 
-### Environment Variables
-
-```bash
-# DeepSeek API Key (required)
-export DEEPSEEK_API_KEY=your_deepseek_api_key_here
-
-# AWS Credentials (for actual Terraform deployment)
-export AWS_ACCESS_KEY_ID=your_access_key
-export AWS_SECRET_ACCESS_KEY=your_secret_key
-export AWS_REGION=us-east-1
-```
-
-### Application Configuration (application.properties)
+Edit `application.properties`:
 
 ```properties
 # Application
 spring.application.name=mcp
 
-# DeepSeek API Configuration
+# LLM Configuration (choose one)
+# DeepSeek
 spring.ai.openai.api-key=${DEEPSEEK_API_KEY}
 spring.ai.openai.base-url=https://api.deepseek.com
 spring.ai.openai.chat.options.model=deepseek-chat
-spring.ai.openai.chat.options.temperature=0.7
-spring.ai.openai.chat.options.max-tokens=4000
 
-# MCP Client Configuration
-spring.ai.mcp.client.request-timeout=120s
+# OR OpenAI
+# spring.ai.openai.api-key=${OPENAI_API_KEY}
+# spring.ai.openai.chat.options.model=gpt-4
+
+# OR Anthropic Claude
+# spring.ai.anthropic.api-key=${ANTHROPIC_API_KEY}
+
+# MCP Configuration
 spring.ai.mcp.client.type=ASYNC
+spring.ai.mcp.client.request-timeout=120s
 spring.ai.mcp.client.toolcallback.enabled=true
 
-# AWS Labs Terraform MCP Server Configuration
+# AWS Labs Terraform MCP Server
 spring.ai.mcp.client.stdio.connections.terraform-mcp-server.command=uvx
 spring.ai.mcp.client.stdio.connections.terraform-mcp-server.args=awslabs.terraform-mcp-server@latest
 spring.ai.mcp.client.stdio.connections.terraform-mcp-server.env.FASTMCP_LOG_LEVEL=ERROR
-
-# Terraform Configuration
-terraform.output.path=./terraform/generated
-terraform.auto.execute=true
 ```
 
-## Troubleshooting
+## Supported AWS Resources
 
-### MCP Server Connection Issues
-- Verify network connectivity to MCP servers
-- Check API credentials and tokens
-- Review logs in `target/` directory
+- **Compute**: EC2, ECS, EKS, Lambda
+- **Storage**: S3, EBS, EFS
+- **Database**: RDS, DynamoDB, ElastiCache
+- **Networking**: VPC, Subnets, Security Groups, NAT Gateway
+- **IAM**: Roles, Policies, Users
+- **Monitoring**: CloudWatch, SNS, SQS
 
-### Terraform Generation Errors
-- Validate resource requirements
-- Check AWS credentials and permissions
-- Ensure correct region configuration
+## Project Structure
 
-## Performance
+```
+terraform-mcp-assistant/
+├── src/main/java/          # Spring Boot application
+├── src/main/resources/     # Configuration files
+├── terraform/generated/    # Auto-generated .tf files
+├── pom.xml                 # Maven configuration
+├── README.md              # This file
+└── terraform-assistant-ui.png  # UI screenshot
+```
 
-- **Module Search**: < 2 seconds (with MCP caching)
-- **Code Generation**: < 1 second for standard resources
-- **Multi-resource Batches**: Scales linearly with complexity
+## Testing
+
+```bash
+# Run tests
+./mvnw test
+
+# Integration tests
+./mvnw verify
+```
+
+## Build & Package
+
+```bash
+# Create executable JAR
+./mvnw clean package
+
+# Run JAR
+java -jar target/mcp-1.0.0.jar
+```
 
 ## Contributing
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
+1. Fork repository
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Commit: `git commit -m 'Add amazing feature'`
+4. Push: `git push origin feature/amazing-feature`
 5. Open Pull Request
 
 ## Future Enhancements
 
-- [ ] Terraform state management dashboard
-- [ ] Cost estimation before apply (AWS Pricing API integration)
-- [ ] Compliance scanning (checkov integration)
-- [ ] Multi-cloud support (Azure ARM, Google Cloud)
-- [ ] GitOps integration (automatic commits and PR creation)
-- [ ] Terraform module versioning and rollback
+- [ ] Terraform state management UI
+- [ ] Cost estimation integration
+- [ ] Multi-cloud support (Azure, GCP)
+- [ ] GitOps integration
 - [ ] Infrastructure drift detection
-- [ ] Custom MCP server integration
-- [ ] Web UI for infrastructure visualization
-- [ ] Slack/Teams notifications for deployments
+- [ ] Web UI improvements
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT License - See LICENSE file
 
 ## Author
 
@@ -362,17 +203,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- AWS for Terraform modules and documentation
-- HashiCorp for Terraform and MCP specifications
-- Spring Boot community for excellent framework
-
-## Support
-
-For issues, questions, or suggestions:
-1. Open an issue on GitHub
-2. Contact via email
-3. Check existing issues for solutions
+- AWS Labs for Terraform MCP Server
+- DeepSeek, OpenAI, Anthropic for LLM APIs
+- Spring AI for excellent framework
+- Terraform for IaC excellence
 
 ---
 
-**Built with ☕ and ☁️ by Sudarshan Jadhav**
+**Built with Java, Spring Boot, AI, and Cloud** ☁️
